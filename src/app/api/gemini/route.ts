@@ -24,12 +24,13 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = systemPrompts[feature] || systemPrompts.chat;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `${systemPrompt}\n\nUser request: ${prompt}`,
+    const response = await ai.interactions.create({
+      model: "gemini-3.8-flash",
+      input: `${systemPrompt}\n\nUser request: ${prompt}`,
     });
 
-    const text = response.text || "No response generated.";
+    // Handle both possible property casings from the SDK
+    const text = response.output_text || response.outputText || "No response generated.";
 
     return NextResponse.json({ result: text });
   } catch (error: unknown) {
