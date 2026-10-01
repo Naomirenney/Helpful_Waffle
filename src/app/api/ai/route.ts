@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Connect to Groq using the OpenAI SDK format
+const openai = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY || "", 
+  baseURL: "https://api.groq.com/openai/v1", // Explicitly point to Groq
+});
 
 export async function POST(request: NextRequest) {
   try {
     const { prompt, feature } = await request.json();
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       return NextResponse.json(
-        { error: "GEMINI_API_KEY is not configured. Please add it to your environment variables." },
+        { error: "GROQ_API_KEY is not configured. Please add it to your .env.local file." },
         { status: 500 }
       );
     }
@@ -24,18 +28,22 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = systemPrompts[feature] || systemPrompts.chat;
 
-    const response = await ai.interactions.create({
-      model: "gemini-3.8-flash",
-      input: `${systemPrompt}\n\nUser request: ${prompt}`,
+    const response = await openai.chat.completions.create({
+      model: "qwen/qwen3.8-27b", // Groq's incredibly fast open-source model
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
     });
 
-    // Handle both possible property casings from the SDK
-    const text = response.output_text || response.outputText || "No response generated.";
+    const text = response.choices[0]?.message?.content || "No response generated.";
 
     return NextResponse.json({ result: text });
   } catch (error: unknown) {
-    console.error("Gemini API error:", error);
+    console.error("AI API error:", error);
     const message = error instanceof Error ? error.message : "Failed to generate response";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

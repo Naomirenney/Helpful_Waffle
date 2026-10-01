@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FileText, Send, Copy, Check, RefreshCw } from "lucide-react";
 import { LoadingDots } from "@/components/LoadingDots";
 import { AIDisclaimer } from "@/components/AIDisclaimer";
@@ -126,8 +128,8 @@ Next meeting: Wednesday 10am.`;
             </div>
           ) : result ? (
             <div className="prose prose-sm max-w-none">
-              <div className="whitespace-pre-wrap text-sm text-text-primary leading-relaxed bg-pastel-cream/50 rounded-xl p-4 border-2 border-border-light">
-                {result}
+              <div className="prose prose-sm max-w-none text-text-primary leading-relaxed bg-pastel-cream/50 rounded-xl p-6 border-2 border-border-light prose-headings:text-text-primary prose-a:text-pastel-orange prose-strong:text-text-primary prose-ul:pl-4">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
               </div>
               <AIDisclaimer />
             </div>
